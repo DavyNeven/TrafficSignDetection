@@ -37,7 +37,7 @@ public:
     std::vector<std::vector<RectWithScore> > Classify(const cv::Mat& img, int win_size, int win_stride, float score_threshold, float nms_overlap);
 private:
 
-    std::vector<std::vector<float> > Predict(const cv::Mat& img);
+    std::vector<std::vector<float> > Predict(const cv::Mat& img, int& blob_width);
 
     void WrapInputLayer(std::vector<cv::Mat>* input_channels);
 
@@ -46,9 +46,7 @@ private:
 
 private:
     shared_ptr<Net<float> > net_;
-    cv::Size input_geometry_;
     int num_channels_;
-    int nClasses;
 };
 
 

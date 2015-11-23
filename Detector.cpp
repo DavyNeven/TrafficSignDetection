@@ -27,9 +27,6 @@ Detector::Detector(const string& model_file,
     num_channels_ = input_layer->channels();
     CHECK(num_channels_ == 3 || num_channels_ == 1)
     << "Input layer should have 1 or 3 channels.";
-    //input_geometry_ = cv::Size(input_layer->width(), input_layer->height());
-
-    this->nClasses = nClasses;
 
     Blob<float>* output_layer = net_->output_blobs()[0];
     CHECK_EQ(nClasses, output_layer->channels())
@@ -72,7 +69,7 @@ static std::vector<std::vector<RectWithScore> > nms(std::vector<std::vector<Rect
             float A1 = b.width*b.height, A2, inter, inter_over_union;
 
             // Remove all bounding boxes where the percent area of overlap is greater than overlap
-            int numGood = 0, x1, x2, y1, y2, a;
+            int numGood = 0, x1, x2, y1, y2;
             for(i = 0; i < num-1; i++) {
                 x1 = std::max(b.x, boxes[i].rect.x);
                 y1 = std::max(b.y, boxes[i].rect.y);
@@ -108,13 +105,13 @@ static std::vector<std::vector<std::pair<int,float> > > threshold(const std::vec
     return locationMap;
 }
 
-static std::vector<std::vector<RectWithScore > > listToBb(const std::vector<std::vector<std::pair<int,float> > > &list,int map_width,int stride)
+static std::vector<std::vector<RectWithScore > > listToBb(const std::vector<std::vector<std::pair<int,float> > > &list,int map_width,int win_size, int stride)
 {
     std::vector<std::vector<RectWithScore > > bbsMap;
     for(int j = 0; j< list.size(); j++) {
         std::vector<RectWithScore> bbs;
         for (int i = 0; i < list[j].size(); i++) {
-            cv::Rect rect((list[j][i].first % map_width) * stride,(list[j][i].first / map_width) * stride,24,24);
+            cv::Rect rect((list[j][i].first % map_width) * stride,(list[j][i].first / map_width) * stride,win_size,win_size);
             float score = list[j][i].second;
             RectWithScore rws {rect, score};
             bbs.push_back(rws);
@@ -126,13 +123,14 @@ static std::vector<std::vector<RectWithScore > > listToBb(const std::vector<std:
 
 std::vector<std::vector<RectWithScore> > Detector::Classify(const cv::Mat& img, int win_size, int win_stride, float score_threshold, float nms_overlap) {
     std::cout << "Total images " << img.size() << std::endl;
-    std::vector<std::vector<float> > dmaps =  Predict(img);
+    int map_width;
+    std::vector<std::vector<float> > dmaps =  Predict(img,map_width);
     std::vector<std::vector<std::pair<int,float> > > locations = threshold(dmaps,score_threshold);
-    std::vector<std::vector<RectWithScore> > bbs = listToBb(locations, 166,win_stride);
+    std::vector<std::vector<RectWithScore> > bbs = listToBb(locations, map_width,win_size, win_stride);
     return nms(bbs,nms_overlap);
 }
 
-std::vector<std::vector<float> > Detector::Predict(const cv::Mat& img) {
+std::vector<std::vector<float> > Detector::Predict(const cv::Mat& img, int& blob_width) {
     Blob<float>* input_layer = net_->input_blobs()[0];
     input_layer->Reshape(1,num_channels_,img.rows, img.cols);
     /* Forward dimension change to all layers. */
@@ -150,6 +148,7 @@ std::vector<std::vector<float> > Detector::Predict(const cv::Mat& img) {
     Blob<float>* output_layer = net_->output_blobs()[0];
     std::cout << "Num of output channels " << output_layer->channels() << std::endl;
     std::cout << "Width of blob" << output_layer->width() <<std::endl;
+    blob_width = output_layer->width();
     std::cout << "Height of blob" << output_layer->height() <<std::endl;
     std::vector<std::vector<float> > outputMaps;
     for(int i=0; i< output_layer->channels(); i++) {

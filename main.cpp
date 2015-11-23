@@ -11,10 +11,8 @@ int main() {
 
     Detector detector(model_file, trained_file, 9);
 
-    vector<cv::Mat> images;
-
     cv::Mat img = cv::imread("/usr/data/dneven/datasets/GTSDB/data/Images/00000.ppm");
-    cv::resize(img, img, cv::Size(680, 400));
+    //cv::resize(img, img, cv::Size(680, 400));
     // Convert image to float
     img.convertTo(img, CV_32FC3, 1. / 255);
 
