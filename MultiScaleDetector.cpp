@@ -22,14 +22,12 @@ std::vector<std::vector<RectWithScore> > MultiScaleDetector::detectMultiscale(co
         cv::resize(img, copy,cv::Size(), scales[i],scales[i]);
         std::vector<std::vector<RectWithScore> > detections =
                 detector->Classify(copy, win_size, win_stride, score_threshold, nms_overlap, scales[i]);
-        std::cout << "Detectionsize:" << detections.size() << std::endl;
         if(multiScaleDetections.size() == 0)
             multiScaleDetections = detections;
         else
             for(int j = 0; j< detections.size(); j++)
                 multiScaleDetections[j].insert(multiScaleDetections[j].end(), detections[j].begin(), detections[j].end());
-        //    multiScaleDetections.insert(multiScaleDetections.end(), detections.begin(), detections.end());
+
     }
-    //return Detector::nms(multiScaleDetections,0.3);
-    return multiScaleDetections;
+    return Detector::nms(multiScaleDetections,nms_overlap,0);
 }

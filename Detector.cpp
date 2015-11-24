@@ -38,10 +38,11 @@ static bool PairCompare(const std::pair<float, int>& lhs,
     return lhs.first > rhs.first;
 }
 
-std::vector<std::vector<RectWithScore> > Detector::nms(std::vector<std::vector<RectWithScore> > &list, float overlap)
+std::vector<std::vector<RectWithScore> > Detector::nms(std::vector<std::vector<RectWithScore> > &list, float overlap, int offset)
 {
+    // As by http://vision.caltech.edu/~sbranson/code/
     std::vector<std::vector<RectWithScore> > bbsMap;
-    for(int k = 1; k < list.size(); k++) {
+    for(int k = offset; k < list.size(); k++) {
         RectWithScore* boxes = &list[k][0];
 
         int numNMS = 0;
@@ -60,7 +61,6 @@ std::vector<std::vector<RectWithScore> > Detector::nms(std::vector<std::vector<R
             }
             //std::cout << "best score: " << bestS << std::endl;
             cv::Rect b = boxes[best].rect;
-            //std::cout << "best rect: " << b << std::endl;
             RectWithScore tmp = boxes[0];
             boxes[0] = boxes[best];
             boxes[best] = tmp;
@@ -73,8 +73,8 @@ std::vector<std::vector<RectWithScore> > Detector::nms(std::vector<std::vector<R
             for(i = 0; i < num-1; i++) {
                 x1 = std::max(b.x, boxes[i].rect.x);
                 y1 = std::max(b.y, boxes[i].rect.y);
-                x2 = std::max(b.x+b.width,  boxes[i].rect.x+boxes[i].rect.width);
-                y2 = std::max(b.y+b.height, boxes[i].rect.y+boxes[i].rect.height);
+                x2 = std::min(b.x+b.width,  boxes[i].rect.x+boxes[i].rect.width);
+                y2 = std::min(b.y+b.height, boxes[i].rect.y+boxes[i].rect.height);
                 A2 = boxes[i].rect.width*boxes[i].rect.height;
                 inter = (float)((x2-x1)*(y2-y1));
                 inter_over_union = inter / (A1+A2-inter);
@@ -127,7 +127,7 @@ std::vector<std::vector<RectWithScore> > Detector::Classify(const cv::Mat& img, 
     std::vector<std::vector<float> > dmaps =  Predict(img,map_width);
     std::vector<std::vector<std::pair<int,float> > > locations = threshold(dmaps,score_threshold);
     std::vector<std::vector<RectWithScore> > bbs = listToBb(locations, map_width,win_size, win_stride, scale);
-    return nms(bbs,nms_overlap);
+    return nms(bbs,nms_overlap,1);
 }
 
 std::vector<std::vector<float> > Detector::Predict(const cv::Mat& img, int& blob_width) {
