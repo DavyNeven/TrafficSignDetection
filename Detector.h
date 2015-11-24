@@ -34,7 +34,9 @@ public:
                const string& trained_file,
                const int nClasses);
 
-    std::vector<std::vector<RectWithScore> > Classify(const cv::Mat& img, int win_size, int win_stride, float score_threshold, float nms_overlap);
+    std::vector<std::vector<RectWithScore> > Classify(const cv::Mat& img, int win_size, int win_stride, double score_threshold, double nms_overlap, double scale);
+    static std::vector<std::vector<RectWithScore> > nms(std::vector<std::vector<RectWithScore> > &list, float overlap);
+
 private:
 
     std::vector<std::vector<float> > Predict(const cv::Mat& img, int& blob_width);

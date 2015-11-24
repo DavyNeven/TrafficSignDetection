@@ -38,7 +38,7 @@ static bool PairCompare(const std::pair<float, int>& lhs,
     return lhs.first > rhs.first;
 }
 
-static std::vector<std::vector<RectWithScore> > nms(std::vector<std::vector<RectWithScore> > &list, float overlap)
+std::vector<std::vector<RectWithScore> > Detector::nms(std::vector<std::vector<RectWithScore> > &list, float overlap)
 {
     std::vector<std::vector<RectWithScore> > bbsMap;
     for(int k = 1; k < list.size(); k++) {
@@ -58,9 +58,9 @@ static std::vector<std::vector<RectWithScore> > nms(std::vector<std::vector<Rect
                     best = i;
                 }
             }
-            std::cout << "best score: " << bestS << std::endl;
+            //std::cout << "best score: " << bestS << std::endl;
             cv::Rect b = boxes[best].rect;
-            std::cout << "best rect: " << b << std::endl;
+            //std::cout << "best rect: " << b << std::endl;
             RectWithScore tmp = boxes[0];
             boxes[0] = boxes[best];
             boxes[best] = tmp;
@@ -105,13 +105,13 @@ static std::vector<std::vector<std::pair<int,float> > > threshold(const std::vec
     return locationMap;
 }
 
-static std::vector<std::vector<RectWithScore > > listToBb(const std::vector<std::vector<std::pair<int,float> > > &list,int map_width,int win_size, int stride)
+static std::vector<std::vector<RectWithScore > > listToBb(const std::vector<std::vector<std::pair<int,float> > > &list,int map_width,int win_size, int stride, double scale)
 {
     std::vector<std::vector<RectWithScore > > bbsMap;
     for(int j = 0; j< list.size(); j++) {
         std::vector<RectWithScore> bbs;
         for (int i = 0; i < list[j].size(); i++) {
-            cv::Rect rect((list[j][i].first % map_width) * stride,(list[j][i].first / map_width) * stride,win_size,win_size);
+            cv::Rect rect((list[j][i].first % map_width) * stride * 1/scale,(list[j][i].first / map_width) * stride * 1/scale,win_size * 1/scale,win_size * 1/scale);
             float score = list[j][i].second;
             RectWithScore rws {rect, score};
             bbs.push_back(rws);
@@ -121,12 +121,12 @@ static std::vector<std::vector<RectWithScore > > listToBb(const std::vector<std:
     return bbsMap;
 }
 
-std::vector<std::vector<RectWithScore> > Detector::Classify(const cv::Mat& img, int win_size, int win_stride, float score_threshold, float nms_overlap) {
-    std::cout << "Total images " << img.size() << std::endl;
+std::vector<std::vector<RectWithScore> > Detector::Classify(const cv::Mat& img, int win_size, int win_stride, double score_threshold, double nms_overlap, double scale) {
+    //std::cout << "Total images " << img.size() << std::endl;
     int map_width;
     std::vector<std::vector<float> > dmaps =  Predict(img,map_width);
     std::vector<std::vector<std::pair<int,float> > > locations = threshold(dmaps,score_threshold);
-    std::vector<std::vector<RectWithScore> > bbs = listToBb(locations, map_width,win_size, win_stride);
+    std::vector<std::vector<RectWithScore> > bbs = listToBb(locations, map_width,win_size, win_stride, scale);
     return nms(bbs,nms_overlap);
 }
 
@@ -146,10 +146,10 @@ std::vector<std::vector<float> > Detector::Predict(const cv::Mat& img, int& blob
     /* Copy the output layer to a std::vector */
 
     Blob<float>* output_layer = net_->output_blobs()[0];
-    std::cout << "Num of output channels " << output_layer->channels() << std::endl;
-    std::cout << "Width of blob" << output_layer->width() <<std::endl;
+    //std::cout << "Num of output channels " << output_layer->channels() << std::endl;
+    //std::cout << "Width of blob" << output_layer->width() <<std::endl;
     blob_width = output_layer->width();
-    std::cout << "Height of blob" << output_layer->height() <<std::endl;
+    //std::cout << "Height of blob" << output_layer->height() <<std::endl;
     std::vector<std::vector<float> > outputMaps;
     for(int i=0; i< output_layer->channels(); i++) {
         const float *begin = output_layer->cpu_data() + i * output_layer->width() * output_layer->height();
