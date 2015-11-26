@@ -30,4 +30,5 @@ std::vector<std::vector<RectWithScore> > MultiScaleDetector::detectMultiscale(co
 
     }
     return Detector::nms(multiScaleDetections,nms_overlap,0);
+    //return multiScaleDetections;
 }
