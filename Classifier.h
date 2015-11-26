@@ -20,8 +20,6 @@
 using namespace caffe;  // NOLINT(build/namespaces)
 using std::string;
 
-/* Pair (label, confidence) representing a prediction. */
-typedef std::pair<string, float> Prediction;
 
 class Classifier {
 public:
@@ -44,7 +42,6 @@ private:
     shared_ptr<Net<float> > net_;
     cv::Size input_geometry_;
     int num_channels_;
-    int nClasses;
 };
 
 #endif /* __CLASSIFIER_H__ */

@@ -25,11 +25,9 @@ Classifier::Classifier(const string& model_file,
     << "Input layer should have 1 or 3 channels.";
     input_geometry_ = cv::Size(input_layer->width(), input_layer->height());
 
-    this->nClasses = nClasses;
-
     Blob<float>* output_layer = net_->output_blobs()[0];
     CHECK_EQ(nClasses, output_layer->channels())
-        << "Number of labels is different from the output layer dimension.";
+        << "Number of classes is different from the output layer dimension.";
 }
 
 static bool PairCompare(const std::pair<float, int>& lhs,
@@ -51,7 +49,7 @@ static std::vector<int> Argmax(const std::vector<float>& v, int N) {
 }
 
 std::vector< std::pair<int,float> > Classifier::Classify(const std::vector<cv::Mat>& img) {
-    std::cout << "Total images " << img.size() << std::endl;
+    //std::cout << "Total images " << img.size() << std::endl;
     std::vector< std::vector<float> > output = Predict(img, img.size());
 
     std::vector< std::pair<int,float> > predictions;
