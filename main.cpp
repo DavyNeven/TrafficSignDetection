@@ -12,8 +12,8 @@ vector<cv::Scalar> colormap;
 vector<cv::Mat> images;
 vector<cv::Mat> labels;
 
-string det_model_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/V10_6/V10.prototxt";
-string det_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/detector.caffemodel";
+string det_model_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/det.prototxt";
+string det_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/det.caffemodel";
 
 string rec_model_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/Classifier/MC.prototxt";
 string rec_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/classifier.caffemodel";

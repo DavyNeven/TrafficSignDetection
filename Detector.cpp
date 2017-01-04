@@ -21,12 +21,12 @@ Detector::Detector(const string& model_file,
     net_->CopyTrainedLayersFrom(trained_file);
 
     CHECK_EQ(net_->num_inputs(), 1) << "Network should have exactly one input.";
-    CHECK_EQ(net_->num_outputs(), 1) << "Network should have exactly one output.";
+    CHECK_EQ(net_->num_outputs(), 1) << "Network should have two outputs.";
 
     Blob<float>* input_layer = net_->input_blobs()[0];
     num_channels_ = input_layer->channels();
-    CHECK(num_channels_ == 3 || num_channels_ == 1)
-    << "Input layer should have 1 or 3 channels.";
+    CHECK(num_channels_ == 3)
+    << "Input layer should have 3 channels.";
 
     Blob<float>* output_layer = net_->output_blobs()[0];
     CHECK_EQ(nClasses, output_layer->channels())
