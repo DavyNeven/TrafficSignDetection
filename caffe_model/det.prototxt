@@ -1,0 +1,390 @@
+input: "data"
+input_shape {
+  dim: 1
+  dim: 3
+  dim: 512
+  dim: 1024
+}
+layer {
+  name: "conv1_1"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1_1"
+  convolution_param {
+    num_output: 64
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_0"
+  type: "ReLU"
+  bottom: "conv1_1"
+  top: "conv1_1"
+}
+layer {
+  name: "conv1_2"
+  type: "Convolution"
+  bottom: "conv1_1"
+  top: "conv1_2"
+  convolution_param {
+    num_output: 64
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_1"
+  type: "ReLU"
+  bottom: "conv1_2"
+  top: "conv1_2"
+}
+layer {
+  name: "caffe.Pooling_2"
+  type: "Pooling"
+  bottom: "conv1_2"
+  top: "caffe.Pooling_2"
+  pooling_param {
+    pool: MAX
+    kernel_h: 2
+    kernel_w: 2
+    stride_h: 2
+    stride_w: 2
+    pad_h: 0
+    pad_w: 0
+  }
+}
+layer {
+  name: "conv2_1"
+  type: "Convolution"
+  bottom: "caffe.Pooling_2"
+  top: "conv2_1"
+  convolution_param {
+    num_output: 128
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_3"
+  type: "ReLU"
+  bottom: "conv2_1"
+  top: "conv2_1"
+}
+layer {
+  name: "conv2_2"
+  type: "Convolution"
+  bottom: "conv2_1"
+  top: "conv2_2"
+  convolution_param {
+    num_output: 128
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_4"
+  type: "ReLU"
+  bottom: "conv2_2"
+  top: "conv2_2"
+}
+layer {
+  name: "caffe.Pooling_5"
+  type: "Pooling"
+  bottom: "conv2_2"
+  top: "caffe.Pooling_5"
+  pooling_param {
+    pool: MAX
+    kernel_h: 2
+    kernel_w: 2
+    stride_h: 2
+    stride_w: 2
+    pad_h: 0
+    pad_w: 0
+  }
+}
+layer {
+  name: "conv3_1"
+  type: "Convolution"
+  bottom: "caffe.Pooling_5"
+  top: "conv3_1"
+  convolution_param {
+    num_output: 256
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_6"
+  type: "ReLU"
+  bottom: "conv3_1"
+  top: "conv3_1"
+}
+layer {
+  name: "conv3_2"
+  type: "Convolution"
+  bottom: "conv3_1"
+  top: "conv3_2"
+  convolution_param {
+    num_output: 256
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_7"
+  type: "ReLU"
+  bottom: "conv3_2"
+  top: "conv3_2"
+}
+layer {
+  name: "conv3_3"
+  type: "Convolution"
+  bottom: "conv3_2"
+  top: "conv3_3"
+  convolution_param {
+    num_output: 256
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_8"
+  type: "ReLU"
+  bottom: "conv3_3"
+  top: "conv3_3"
+}
+layer {
+  name: "caffe.Pooling_9"
+  type: "Pooling"
+  bottom: "conv3_3"
+  top: "caffe.Pooling_9"
+  pooling_param {
+    pool: MAX
+    kernel_h: 2
+    kernel_w: 2
+    stride_h: 2
+    stride_w: 2
+    pad_h: 0
+    pad_w: 0
+  }
+}
+layer {
+  name: "conv4_1"
+  type: "Convolution"
+  bottom: "caffe.Pooling_9"
+  top: "conv4_1"
+  convolution_param {
+    num_output: 512
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_10"
+  type: "ReLU"
+  bottom: "conv4_1"
+  top: "conv4_1"
+}
+layer {
+  name: "conv4_2"
+  type: "Convolution"
+  bottom: "conv4_1"
+  top: "conv4_2"
+  convolution_param {
+    num_output: 512
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_11"
+  type: "ReLU"
+  bottom: "conv4_2"
+  top: "conv4_2"
+}
+layer {
+  name: "conv4_3"
+  type: "Convolution"
+  bottom: "conv4_2"
+  top: "conv4_3"
+  convolution_param {
+    num_output: 512
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_12"
+  type: "ReLU"
+  bottom: "conv4_3"
+  top: "conv4_3"
+}
+
+layer {
+  name: "upsample_one", type: "Deconvolution"
+  bottom: "conv4_3" top: "conv4_3_up"
+  convolution_param {
+    kernel_size: 4 stride: 2
+    num_output: 512 group: 512
+    pad: 1
+    weight_filler: { type: "bilinear" } bias_term: false
+  }
+  param { lr_mult: 0 decay_mult: 0 }
+}
+
+layer {
+  name: "caffe.Concat_13"
+  type: "Concat"
+  bottom: "conv3_3"
+  bottom: "conv4_3_up"
+  top: "caffe.Concat_13"
+  concat_param {
+    axis: 1
+  }
+}
+
+
+
+layer {
+  name: "caffe.SpatialConvolution_14"
+  type: "Convolution"
+  bottom: "caffe.Concat_13"
+  top: "caffe.SpatialConvolution_14"
+  convolution_param {
+    num_output: 512
+    pad_h: 0
+    pad_w: 0
+    kernel_h: 1
+    kernel_w: 1
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_15"
+  type: "ReLU"
+  bottom: "caffe.SpatialConvolution_14"
+  top: "caffe.SpatialConvolution_14"
+}
+layer {
+  name: "caffe.Power_16"
+  type: "Power"
+  bottom: "caffe.SpatialConvolution_14"
+  top: "caffe.SpatialConvolution_14"
+  power_param {
+    power: 1
+    scale: 0.5
+    shift: 0
+  }
+}
+layer {
+  name: "caffe.SpatialConvolution_17"
+  type: "Convolution"
+  bottom: "caffe.SpatialConvolution_14"
+  top: "caffe.SpatialConvolution_17"
+  convolution_param {
+    num_output: 2
+    pad_h: 0
+    pad_w: 0
+    kernel_h: 1
+    kernel_w: 1
+    stride_h: 1
+    stride_w: 1
+  }
+}
+
+layer {
+  name: "prob"
+  type: "Softmax"
+  bottom: "caffe.SpatialConvolution_17"
+  top: "prob"
+}
+
+layer {
+  name: "caffe.SpatialConvolution_18"
+  type: "Convolution"
+  bottom: "caffe.Concat_13"
+  top: "caffe.SpatialConvolution_18"
+  convolution_param {
+    num_output: 512
+    pad_h: 0
+    pad_w: 0
+    kernel_h: 1
+    kernel_w: 1
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "caffe.ReLU_19"
+  type: "ReLU"
+  bottom: "caffe.SpatialConvolution_18"
+  top: "caffe.SpatialConvolution_18"
+}
+layer {
+  name: "caffe.Power_20"
+  type: "Power"
+  bottom: "caffe.SpatialConvolution_18"
+  top: "caffe.SpatialConvolution_18"
+  power_param {
+    power: 1
+    scale: 0.5
+    shift: 0
+  }
+}
+layer {
+  name: "caffe.SpatialConvolution_21"
+  type: "Convolution"
+  bottom: "caffe.SpatialConvolution_18"
+  top: "caffe.SpatialConvolution_21"
+  convolution_param {
+    num_output: 4
+    pad_h: 0
+    pad_w: 0
+    kernel_h: 1
+    kernel_w: 1
+    stride_h: 1
+    stride_w: 1
+  }
+}
