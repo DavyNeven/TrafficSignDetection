@@ -21,16 +21,20 @@ Detector::Detector(const string& model_file,
     net_->CopyTrainedLayersFrom(trained_file);
 
     CHECK_EQ(net_->num_inputs(), 1) << "Network should have exactly one input.";
-    CHECK_EQ(net_->num_outputs(), 1) << "Network should have two outputs.";
+    CHECK_EQ(net_->num_outputs(), 2) << "Network should have two outputs.";
 
     Blob<float>* input_layer = net_->input_blobs()[0];
     num_channels_ = input_layer->channels();
     CHECK(num_channels_ == 3)
     << "Input layer should have 3 channels.";
 
-    Blob<float>* output_layer = net_->output_blobs()[0];
-    CHECK_EQ(nClasses, output_layer->channels())
-        << "Number of labels is different from the output layer dimension.";
+    Blob<float>* score_layer = net_->output_blobs()[1];
+    CHECK_EQ(2, score_layer->channels())
+        << "Dimension of score output is not equal to 2.";
+
+    Blob<float>* bbox_layer = net_->output_blobs()[0];
+    CHECK_EQ(4, bbox_layer->channels())
+        << "Dimension of bbox output is not equal to 4.";
 }
 
 static bool PairCompare(const std::pair<float, int>& lhs,
@@ -38,58 +42,54 @@ static bool PairCompare(const std::pair<float, int>& lhs,
     return lhs.first > rhs.first;
 }
 
-std::vector<std::vector<RectWithScore> > Detector::nms(std::vector<std::vector<RectWithScore> > &list, float overlap, int offset)
+std::vector<RectWithScore> Detector::nms(std::vector<RectWithScore> &list, float overlap)
 {
-    // As by http://vision.caltech.edu/~sbranson/code/
-    std::vector<std::vector<RectWithScore> > bbsMap;
-    for(int k = offset; k < list.size(); k++) {
-        RectWithScore* boxes = &list[k][0];
+    RectWithScore* boxes = &list[0];
 
-        int numNMS = 0;
-        int num = list[k].size();
-        int i;
-        // Greedy "non-maximal suppression"
-        while(num) {
-            // Greedily select the highest scoring bounding box
-            int best = -1;
-            float bestS = -10000000;
-            for(i = 0; i < num; i++) {
-                if(boxes[i].score > bestS) {
-                    bestS = boxes[i].score;
-                    best = i;
-                }
+    int numNMS = 0;
+    int num = list.size();
+    int i;
+    // Greedy "non-maximal suppression"
+    while(num) {
+        // Greedily select the highest scoring bounding box
+        int best = -1;
+        float bestS = -10000000;
+        for(i = 0; i < num; i++) {
+            if(boxes[i].score > bestS) {
+                bestS = boxes[i].score;
+                best = i;
             }
-            //std::cout << "best score: " << bestS << std::endl;
-            cv::Rect b = boxes[best].rect;
-            RectWithScore tmp = boxes[0];
-            boxes[0] = boxes[best];
-            boxes[best] = tmp;
-            boxes++;
-            numNMS++;
-            float A1 = b.width*b.height, A2, inter, inter_over_union;
-
-            // Remove all bounding boxes where the percent area of overlap is greater than overlap
-            int numGood = 0, x1, x2, y1, y2;
-            for(i = 0; i < num-1; i++) {
-                x1 = std::max(b.x, boxes[i].rect.x);
-                y1 = std::max(b.y, boxes[i].rect.y);
-                x2 = std::min(b.x+b.width,  boxes[i].rect.x+boxes[i].rect.width);
-                y2 = std::min(b.y+b.height, boxes[i].rect.y+boxes[i].rect.height);
-                A2 = boxes[i].rect.width*boxes[i].rect.height;
-                inter = (float)((x2-x1)*(y2-y1));
-                inter_over_union = inter / (A1+A2-inter);
-                if(inter_over_union <= overlap) {
-                    tmp = boxes[numGood];
-                    boxes[numGood++] = boxes[i];
-                    boxes[i] = tmp;
-                }
-            }
-            num = numGood;
         }
-        std::vector<RectWithScore> bbs(&list[k][0],&list[k][0] + numNMS);
-        bbsMap.push_back(bbs);
+        //std::cout << "best score: " << bestS << std::endl;
+        cv::Rect b = boxes[best].rect;
+        RectWithScore tmp = boxes[0];
+        boxes[0] = boxes[best];
+        boxes[best] = tmp;
+        boxes++;
+        numNMS++;
+        float A1 = b.width*b.height, A2, inter, inter_over_union;
+
+        // Remove all bounding boxes where the percent area of overlap is greater than overlap
+        int numGood = 0, x1, x2, y1, y2;
+        for(i = 0; i < num-1; i++) {
+            x1 = std::max(b.x, boxes[i].rect.x);
+            y1 = std::max(b.y, boxes[i].rect.y);
+            x2 = std::min(b.x+b.width,  boxes[i].rect.x+boxes[i].rect.width);
+            y2 = std::min(b.y+b.height, boxes[i].rect.y+boxes[i].rect.height);
+            A2 = boxes[i].rect.width*boxes[i].rect.height;
+            inter = (float)((x2-x1)*(y2-y1));
+            inter_over_union = inter / (A1+A2-inter);
+            if(inter_over_union <= overlap) {
+                tmp = boxes[numGood];
+                boxes[numGood++] = boxes[i];
+                boxes[i] = tmp;
+            }
+        }
+        num = numGood;
     }
-    return bbsMap;
+    std::vector<RectWithScore> bbs(&list[0],&list[0] + numNMS);
+
+    return bbs;
 }
 
 static std::vector<std::vector<std::pair<int,float> > > threshold(const std::vector<std::vector<float> >& v, float t)
@@ -105,7 +105,7 @@ static std::vector<std::vector<std::pair<int,float> > > threshold(const std::vec
     return locationMap;
 }
 
-static std::vector<std::vector<RectWithScore > > listToBb(const std::vector<std::vector<std::pair<int,float> > > &list,int map_width,int win_size, int stride, double scale)
+/*static std::vector<std::vector<RectWithScore > > listToBb(const std::vector<std::vector<std::pair<int,float> > > &list,int map_width,int win_size, int stride, double scale)
 {
     std::vector<std::vector<RectWithScore > > bbsMap;
     for(int j = 0; j< list.size(); j++) {
@@ -119,15 +119,41 @@ static std::vector<std::vector<RectWithScore > > listToBb(const std::vector<std:
         bbsMap.push_back(bbs);
     }
     return bbsMap;
+}*/
+
+static std::vector<RectWithScore> listToBb(const std::vector<std::vector<float> > &list,int map_width,int win_size, int stride, double scale, double score_threshold)
+{
+    std::vector<RectWithScore> bbs;
+    for(int i = 0; i< list[0].size(); i++){
+        float score = list[0][i];
+        //std::cout << score << std::endl;
+        if(score > score_threshold){
+            int x =  (i%map_width)*stride;
+            int y = (i/map_width)*stride;
+            int x1 = std::max(0.0, (x - list[1][i]*win_size)*1/scale);
+            int y1 = std::max(0.0, (y - list[2][i]*win_size)*1/scale);
+            int x2 = (x - list[3][i]*win_size)*1/scale;
+            int y2 = (y - list[4][i]*win_size)*1/scale;
+            int w = x2 - x1;
+            int h = y2 - y1;
+            if(w > 0 && h > 0) {
+                cv::Rect rect(x1, y1, w, h);
+                RectWithScore rws{rect, score};
+                bbs.push_back(rws);
+            }
+        }
+    }
+    return bbs;
 }
 
-std::vector<std::vector<RectWithScore> > Detector::Classify(const cv::Mat& img, int win_size, int win_stride, double score_threshold, double nms_overlap, double scale) {
+
+
+std::vector<RectWithScore> Detector::Classify(const cv::Mat& img, int win_size, int win_stride, double score_threshold, double nms_overlap, double scale) {
     //std::cout << "Total images " << img.size() << std::endl;
     int map_width;
-    std::vector<std::vector<float> > dmaps =  Predict(img,map_width);
-    std::vector<std::vector<std::pair<int,float> > > locations = threshold(dmaps,score_threshold);
-    std::vector<std::vector<RectWithScore> > bbs = listToBb(locations, map_width,win_size, win_stride, scale);
-    return nms(bbs,nms_overlap,1);
+    std::vector<std::vector<float> > outputMaps =  Predict(img,map_width);
+    std::vector<RectWithScore> bbs = listToBb(outputMaps, map_width,win_size, win_stride, scale, score_threshold);
+    return nms(bbs,nms_overlap);
 }
 
 std::vector<std::vector<float> > Detector::Predict(const cv::Mat& img, int& blob_width) {
@@ -145,18 +171,27 @@ std::vector<std::vector<float> > Detector::Predict(const cv::Mat& img, int& blob
 
     /* Copy the output layer to a std::vector */
 
-    Blob<float>* output_layer = net_->output_blobs()[0];
-    //std::cout << "Num of output channels " << output_layer->channels() << std::endl;
-    //std::cout << "Width of blob" << output_layer->width() <<std::endl;
-    blob_width = output_layer->width();
+    Blob<float>* score_map = net_->output_blobs()[1];
+    Blob<float>* bbox_map = net_->output_blobs()[0];
+
+    blob_width = score_map->width();
     //std::cout << "Height of blob" << output_layer->height() <<std::endl;
     std::vector<std::vector<float> > outputMaps;
-    for(int i=0; i< output_layer->channels(); i++) {
-        const float *begin = output_layer->cpu_data() + i * output_layer->width() * output_layer->height();
-        const float *end = begin + output_layer->width() * output_layer->height();
+
+    // Read one score map
+    const float *s_begin = score_map->cpu_data() + score_map->width()*score_map->height();
+    const float *s_end = s_begin + score_map->width()*score_map->height();
+    std::vector<float> o(s_begin, s_end);
+    outputMaps.push_back(o);
+
+    // Read 4 bbox maps
+    for(int i=0; i< bbox_map->channels(); i++) {
+        const float *begin = bbox_map->cpu_data() + i * bbox_map->width() * bbox_map->height();
+        const float *end = begin + bbox_map->width() * bbox_map->height();
         std::vector<float> o(begin, end);
         outputMaps.push_back(o);
     }
+
     return outputMaps;
 }
 

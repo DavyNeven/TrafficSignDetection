@@ -2,8 +2,8 @@ input: "data"
 input_shape {
   dim: 1
   dim: 3
-  dim: 512
-  dim: 1024
+  dim: 256
+  dim: 256
 }
 layer {
   name: "conv1_1"
@@ -21,15 +21,24 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_0"
-  type: "ReLU"
+  name: "caffe.BatchNorm_0"
+  type: "BatchNorm"
   bottom: "conv1_1"
-  top: "conv1_1"
+  top: "caffe.BatchNorm_0"
+  batch_norm_param {
+    use_global_stats: true
+  }
+}
+layer {
+  name: "caffe.ReLU_1"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_0"
+  top: "caffe.BatchNorm_0"
 }
 layer {
   name: "conv1_2"
   type: "Convolution"
-  bottom: "conv1_1"
+  bottom: "caffe.BatchNorm_0"
   top: "conv1_2"
   convolution_param {
     num_output: 64
@@ -42,16 +51,25 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_1"
-  type: "ReLU"
+  name: "caffe.BatchNorm_2"
+  type: "BatchNorm"
   bottom: "conv1_2"
-  top: "conv1_2"
+  top: "caffe.BatchNorm_2"
+  batch_norm_param {
+    use_global_stats: true
+  }
 }
 layer {
-  name: "caffe.Pooling_2"
+  name: "caffe.ReLU_3"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_2"
+  top: "caffe.BatchNorm_2"
+}
+layer {
+  name: "caffe.Pooling_4"
   type: "Pooling"
-  bottom: "conv1_2"
-  top: "caffe.Pooling_2"
+  bottom: "caffe.BatchNorm_2"
+  top: "caffe.Pooling_4"
   pooling_param {
     pool: MAX
     kernel_h: 2
@@ -65,7 +83,7 @@ layer {
 layer {
   name: "conv2_1"
   type: "Convolution"
-  bottom: "caffe.Pooling_2"
+  bottom: "caffe.Pooling_4"
   top: "conv2_1"
   convolution_param {
     num_output: 128
@@ -78,15 +96,24 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_3"
-  type: "ReLU"
+  name: "caffe.BatchNorm_5"
+  type: "BatchNorm"
   bottom: "conv2_1"
-  top: "conv2_1"
+  top: "caffe.BatchNorm_5"
+  batch_norm_param {
+    use_global_stats: true
+  }
+}
+layer {
+  name: "caffe.ReLU_6"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_5"
+  top: "caffe.BatchNorm_5"
 }
 layer {
   name: "conv2_2"
   type: "Convolution"
-  bottom: "conv2_1"
+  bottom: "caffe.BatchNorm_5"
   top: "conv2_2"
   convolution_param {
     num_output: 128
@@ -99,16 +126,25 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_4"
-  type: "ReLU"
+  name: "caffe.BatchNorm_7"
+  type: "BatchNorm"
   bottom: "conv2_2"
-  top: "conv2_2"
+  top: "caffe.BatchNorm_7"
+  batch_norm_param {
+    use_global_stats: true
+  }
 }
 layer {
-  name: "caffe.Pooling_5"
+  name: "caffe.ReLU_8"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_7"
+  top: "caffe.BatchNorm_7"
+}
+layer {
+  name: "caffe.Pooling_9"
   type: "Pooling"
-  bottom: "conv2_2"
-  top: "caffe.Pooling_5"
+  bottom: "caffe.BatchNorm_7"
+  top: "caffe.Pooling_9"
   pooling_param {
     pool: MAX
     kernel_h: 2
@@ -122,7 +158,7 @@ layer {
 layer {
   name: "conv3_1"
   type: "Convolution"
-  bottom: "caffe.Pooling_5"
+  bottom: "caffe.Pooling_9"
   top: "conv3_1"
   convolution_param {
     num_output: 256
@@ -135,15 +171,24 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_6"
-  type: "ReLU"
+  name: "caffe.BatchNorm_10"
+  type: "BatchNorm"
   bottom: "conv3_1"
-  top: "conv3_1"
+  top: "caffe.BatchNorm_10"
+  batch_norm_param {
+    use_global_stats: true
+  }
+}
+layer {
+  name: "caffe.ReLU_11"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_10"
+  top: "caffe.BatchNorm_10"
 }
 layer {
   name: "conv3_2"
   type: "Convolution"
-  bottom: "conv3_1"
+  bottom: "caffe.BatchNorm_10"
   top: "conv3_2"
   convolution_param {
     num_output: 256
@@ -156,15 +201,24 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_7"
-  type: "ReLU"
+  name: "caffe.BatchNorm_12"
+  type: "BatchNorm"
   bottom: "conv3_2"
-  top: "conv3_2"
+  top: "caffe.BatchNorm_12"
+  batch_norm_param {
+    use_global_stats: true
+  }
+}
+layer {
+  name: "caffe.ReLU_13"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_12"
+  top: "caffe.BatchNorm_12"
 }
 layer {
   name: "conv3_3"
   type: "Convolution"
-  bottom: "conv3_2"
+  bottom: "caffe.BatchNorm_12"
   top: "conv3_3"
   convolution_param {
     num_output: 256
@@ -177,16 +231,25 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_8"
-  type: "ReLU"
+  name: "caffe.BatchNorm_14"
+  type: "BatchNorm"
   bottom: "conv3_3"
-  top: "conv3_3"
+  top: "caffe.BatchNorm_14"
+  batch_norm_param {
+    use_global_stats: true
+  }
 }
 layer {
-  name: "caffe.Pooling_9"
+  name: "caffe.ReLU_15"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_14"
+  top: "caffe.BatchNorm_14"
+}
+layer {
+  name: "caffe.Pooling_16"
   type: "Pooling"
-  bottom: "conv3_3"
-  top: "caffe.Pooling_9"
+  bottom: "caffe.BatchNorm_14"
+  top: "caffe.Pooling_16"
   pooling_param {
     pool: MAX
     kernel_h: 2
@@ -200,7 +263,7 @@ layer {
 layer {
   name: "conv4_1"
   type: "Convolution"
-  bottom: "caffe.Pooling_9"
+  bottom: "caffe.Pooling_16"
   top: "conv4_1"
   convolution_param {
     num_output: 512
@@ -213,15 +276,24 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_10"
-  type: "ReLU"
+  name: "caffe.BatchNorm_17"
+  type: "BatchNorm"
   bottom: "conv4_1"
-  top: "conv4_1"
+  top: "caffe.BatchNorm_17"
+  batch_norm_param {
+    use_global_stats: true
+  }
+}
+layer {
+  name: "caffe.ReLU_18"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_17"
+  top: "caffe.BatchNorm_17"
 }
 layer {
   name: "conv4_2"
   type: "Convolution"
-  bottom: "conv4_1"
+  bottom: "caffe.BatchNorm_17"
   top: "conv4_2"
   convolution_param {
     num_output: 512
@@ -234,15 +306,24 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_11"
-  type: "ReLU"
+  name: "caffe.BatchNorm_19"
+  type: "BatchNorm"
   bottom: "conv4_2"
-  top: "conv4_2"
+  top: "caffe.BatchNorm_19"
+  batch_norm_param {
+    use_global_stats: true
+  }
+}
+layer {
+  name: "caffe.ReLU_20"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_19"
+  top: "caffe.BatchNorm_19"
 }
 layer {
   name: "conv4_3"
   type: "Convolution"
-  bottom: "conv4_2"
+  bottom: "caffe.BatchNorm_19"
   top: "conv4_3"
   convolution_param {
     num_output: 512
@@ -255,15 +336,24 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_12"
-  type: "ReLU"
+  name: "caffe.BatchNorm_21"
+  type: "BatchNorm"
   bottom: "conv4_3"
-  top: "conv4_3"
+  top: "caffe.BatchNorm_21"
+  batch_norm_param {
+    use_global_stats: true
+  }
+}
+layer {
+  name: "caffe.ReLU_22"
+  type: "ReLU"
+  bottom: "caffe.BatchNorm_21"
+  top: "caffe.BatchNorm_21"
 }
 
 layer {
   name: "upsample_one", type: "Deconvolution"
-  bottom: "conv4_3" top: "conv4_3_up"
+  bottom: "caffe.BatchNorm_21" top: "caffe.BatchNorm_21_up"
   convolution_param {
     kernel_size: 4 stride: 2
     num_output: 512 group: 512
@@ -274,23 +364,20 @@ layer {
 }
 
 layer {
-  name: "caffe.Concat_13"
+  name: "caffe.Concat_23"
   type: "Concat"
-  bottom: "conv3_3"
-  bottom: "conv4_3_up"
-  top: "caffe.Concat_13"
+  bottom: "caffe.BatchNorm_14"
+  bottom: "caffe.BatchNorm_21_up"
+  top: "caffe.Concat_23"
   concat_param {
     axis: 1
   }
 }
-
-
-
 layer {
-  name: "caffe.SpatialConvolution_14"
+  name: "caffe.SpatialConvolution_24"
   type: "Convolution"
-  bottom: "caffe.Concat_13"
-  top: "caffe.SpatialConvolution_14"
+  bottom: "caffe.Concat_23"
+  top: "caffe.SpatialConvolution_24"
   convolution_param {
     num_output: 512
     pad_h: 0
@@ -302,16 +389,16 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_15"
+  name: "caffe.ReLU_25"
   type: "ReLU"
-  bottom: "caffe.SpatialConvolution_14"
-  top: "caffe.SpatialConvolution_14"
+  bottom: "caffe.SpatialConvolution_24"
+  top: "caffe.SpatialConvolution_24"
 }
 layer {
-  name: "caffe.Power_16"
+  name: "caffe.Power_26"
   type: "Power"
-  bottom: "caffe.SpatialConvolution_14"
-  top: "caffe.SpatialConvolution_14"
+  bottom: "caffe.SpatialConvolution_24"
+  top: "caffe.SpatialConvolution_24"
   power_param {
     power: 1
     scale: 0.5
@@ -319,10 +406,10 @@ layer {
   }
 }
 layer {
-  name: "caffe.SpatialConvolution_17"
+  name: "caffe.SpatialConvolution_27"
   type: "Convolution"
-  bottom: "caffe.SpatialConvolution_14"
-  top: "caffe.SpatialConvolution_17"
+  bottom: "caffe.SpatialConvolution_24"
+  top: "caffe.SpatialConvolution_27"
   convolution_param {
     num_output: 2
     pad_h: 0
@@ -337,15 +424,15 @@ layer {
 layer {
   name: "prob"
   type: "Softmax"
-  bottom: "caffe.SpatialConvolution_17"
+  bottom: "caffe.SpatialConvolution_27"
   top: "prob"
 }
 
 layer {
-  name: "caffe.SpatialConvolution_18"
+  name: "caffe.SpatialConvolution_28"
   type: "Convolution"
-  bottom: "caffe.Concat_13"
-  top: "caffe.SpatialConvolution_18"
+  bottom: "caffe.Concat_23"
+  top: "caffe.SpatialConvolution_28"
   convolution_param {
     num_output: 512
     pad_h: 0
@@ -357,16 +444,16 @@ layer {
   }
 }
 layer {
-  name: "caffe.ReLU_19"
+  name: "caffe.ReLU_29"
   type: "ReLU"
-  bottom: "caffe.SpatialConvolution_18"
-  top: "caffe.SpatialConvolution_18"
+  bottom: "caffe.SpatialConvolution_28"
+  top: "caffe.SpatialConvolution_28"
 }
 layer {
-  name: "caffe.Power_20"
+  name: "caffe.Power_30"
   type: "Power"
-  bottom: "caffe.SpatialConvolution_18"
-  top: "caffe.SpatialConvolution_18"
+  bottom: "caffe.SpatialConvolution_28"
+  top: "caffe.SpatialConvolution_28"
   power_param {
     power: 1
     scale: 0.5
@@ -374,10 +461,10 @@ layer {
   }
 }
 layer {
-  name: "caffe.SpatialConvolution_21"
+  name: "caffe.SpatialConvolution_31"
   type: "Convolution"
-  bottom: "caffe.SpatialConvolution_18"
-  top: "caffe.SpatialConvolution_21"
+  bottom: "caffe.SpatialConvolution_28"
+  top: "caffe.SpatialConvolution_31"
   convolution_param {
     num_output: 4
     pad_h: 0

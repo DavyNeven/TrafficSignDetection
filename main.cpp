@@ -1,50 +1,34 @@
 #include <iostream>
 #include "MultiScaleDetector.h"
 #include "Classifier.h"
-#include <time.h>
 
 using namespace std;
 
+int nScales = 2;
+double scales[] = {0.8, 0.4};
+int w = 640;
+int h = 480;
+double score_threshold = 0.99;
+double nms_overlap = 0.3;
 
-double scales[] = {0.8,0.6,0.4,0.2};
-int nScales = 4;
-vector<cv::Scalar> colormap;
+//Model parameters
+int downsample = 4;
+int normsize = 128/4;
+
 vector<cv::Mat> images;
 vector<cv::Mat> labels;
 
-string det_model_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/det.prototxt";
-string det_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/det.caffemodel";
+string det_model_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/proto.prototxt";
+string det_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/weights.caffemodel";
 
-string rec_model_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/Classifier/MC.prototxt";
-string rec_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/classifier.caffemodel";
+string rec_model_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/clas.prototxt";
+string rec_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/clas.caffemodel";
 
 string imagesBasePath = "/esat/larimar/dneven/datasets/GTSDB/FullIJCNN2013/";
 string labelBasePath = "/esat/larimar/dneven/datasets/GTSRB/classImages/";
 
-void createColorMap()
-{
-    colormap.push_back(cv::Scalar(0,100,200));
-    colormap.push_back(cv::Scalar(255,0,0));
-    colormap.push_back(cv::Scalar(0,255,0));
-    colormap.push_back(cv::Scalar(255,255,0));
-    colormap.push_back(cv::Scalar(0,0,255));
-    colormap.push_back(cv::Scalar(255,0,255));
-    colormap.push_back(cv::Scalar(0,255,255));
-    colormap.push_back(cv::Scalar(255,255,255));
-    colormap.push_back(cv::Scalar(100,200,50));
-}
-
 void loadImages()
 {
-    /*for(int i = 0; i< 100; i++){
-        char buffer[10];
-        sprintf(buffer, "%05d", i);
-        string path = imagesBasePath + string(buffer) + ".ppm";
-        cv::Mat img = cv::imread(path);
-        cv::resize(img, img, cv::Size(640, 400));
-        img.convertTo(img, CV_32FC3, 1. / 255);
-        images.push_back(img);
-    }*/
     for(int i = 0; i< 43; i++){
         char buffer[10];
         sprintf(buffer, "%05d", i);
@@ -54,12 +38,6 @@ void loadImages()
         img.convertTo(img, CV_32FC3, 1. / 255);
         labels.push_back(img);
     }
-}
-
-void init()
-{
-    createColorMap();
-    loadImages();
 }
 
 void initWebcam(cv::VideoCapture &cap, int cameraNumber,int width, int height)
@@ -78,30 +56,34 @@ void initWebcam(cv::VideoCapture &cap, int cameraNumber,int width, int height)
 
 int main() {
 
-    init();
+    loadImages();
     cv::VideoCapture cap;
-    initWebcam(cap, 0, 640, 480);
+    initWebcam(cap, 0, w, h);
     cv::Mat webcamImage;
    
 
     //Detector detector(model_file, trained_file, 9);
-    MultiScaleDetector detector(det_model_file, det_caffe_file, 9, 20, 4);
+    MultiScaleDetector detector(det_model_file, det_caffe_file, 2, normsize, downsample);
     Classifier classifier(rec_model_file, rec_caffe_file, 43);
 
     clock_t start, end;
     start = clock();
     //for(int k = 0; k< images.size(); k++) {
     while(true) {
-	cap >> webcamImage;
+	    cap >> webcamImage;
         webcamImage.convertTo(webcamImage, CV_32FC3, 1. / 255);
-	vector<vector<RectWithScore> > outputMaps = detector.detectMultiscale(webcamImage, 0.8, 0.2, scales, nScales);
+	    vector<RectWithScore> bbs = detector.detectMultiscale(webcamImage, score_threshold, nms_overlap, scales, nScales);
         vector<cv::Mat> patches;
-        for (int i = 0; i < outputMaps.size(); i++) {
-            for (int j = 0; j < outputMaps[i].size(); j++) {
-                cv::Mat patch = webcamImage(outputMaps[i][j].rect);
+        for (int i = 0; i < bbs.size(); i++){
+                cv::Rect rect = bbs[i].rect;
+                rect.width = min(w, rect.width);
+                rect.height = min(h, rect.height);
+                rect.x = max(0, rect.x);
+                rect.y = max(0, rect.y);
+                cout << bbs[i].rect << endl;
+                cv::Mat patch = webcamImage(bbs[i].rect);
                 cv::resize(patch, patch, cv::Size(48, 48));
                 patches.push_back(patch);
-            }
         }
         vector<pair<int,float> > classifications;
         if(patches.size() > 0)
@@ -113,17 +95,13 @@ int main() {
             }
         }
         int count = 0;
-        for (int i = 0; i < outputMaps.size(); i++) {
+        for (int i = 0; i < bbs.size(); i++) {
             //cout << "Class " << i << endl;
-            for (int j = 0; j < outputMaps[i].size(); j++) {
-                cv::rectangle(webcamImage, outputMaps[i][j].rect, colormap[i], 1, 8, 0);
+                cv::rectangle(webcamImage, bbs[i].rect, cv::Scalar(255,0,0), 1, 8, 0);
                 cv::Mat small = labels[classifications[count].first];
-		if(classifications[count].second > 0.8)                
-			small.copyTo(webcamImage(cv::Rect(max(0,outputMaps[i][j].rect.tl().x-30), max(0,outputMaps[i][j].rect.tl().y-30),small.cols, small.rows)));
-                cout << "score detection: " << outputMaps[i][j].score << endl;
-                count++;
-            }
-
+		        if(classifications[count].second > 0.8)
+			        small.copyTo(webcamImage(cv::Rect(max(0,bbs[i].rect.tl().x-30), max(0,bbs[i].rect.tl().y-30),small.cols, small.rows)));
+                cout << "score detection: " << bbs[i].score << endl;
         }
         cv::imshow("image", webcamImage);
         cv::waitKey(10);

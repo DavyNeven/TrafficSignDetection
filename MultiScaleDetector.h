@@ -22,7 +22,7 @@ public:
                        const int nClasses,
                        int win_size, int win_stride);
 
-    std::vector<std::vector<RectWithScore> > detectMultiscale(const cv::Mat& img, float score_threshold, float nms_overlap,
+    std::vector<RectWithScore> detectMultiscale(const cv::Mat& img, float score_threshold, float nms_overlap,
                                                                 double *scales, int nScales);
 
 protected:
