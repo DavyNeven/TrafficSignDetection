@@ -130,8 +130,8 @@ static std::vector<RectWithScore> listToBb(const std::vector<std::vector<float> 
         if(score > score_threshold){
             int x =  (i%map_width)*stride;
             int y = (i/map_width)*stride;
-            int x1 = std::max(0.0, (x - list[1][i]*win_size)*1/scale);
-            int y1 = std::max(0.0, (y - list[2][i]*win_size)*1/scale);
+            int x1 = (x - list[1][i]*win_size)*1/scale;
+            int y1 = (y - list[2][i]*win_size)*1/scale;
             int x2 = (x - list[3][i]*win_size)*1/scale;
             int y2 = (y - list[4][i]*win_size)*1/scale;
             int w = x2 - x1;
