@@ -19,7 +19,7 @@ vector<cv::Mat> images;
 vector<cv::Mat> labels;
 
 string det_model_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/det.prototxt";
-string det_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/det.caffemodel";
+string det_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/detV2.caffemodel";
 
 string rec_model_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/clas.prototxt";
 string rec_caffe_file = "/users/visics/dneven/Devel/C++/TrafficSignDetection/caffe_model/clas.caffemodel";
